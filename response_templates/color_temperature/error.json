@@ -1,0 +1,23 @@
+{
+  "event": {
+    "header": {
+      "namespace": "Alexa.ColorTemperatureController",
+      "name": "ErrorResponse",
+      "messageId": "abc-123-def-456",
+      "correlationToken": "abcdef-123456",
+      "payloadVersion": "3"
+    },
+     "endpoint": {
+      "scope": {
+        "type": "BearerToken",
+        "token": "access-token-from-Amazon"
+      },
+      "endpointId": "appliance-001"
+    },
+    "payload": {
+      "type": "NOT_SUPPORTED_IN_CURRENT_MODE",
+      "message": "The light is currently set to a color.",
+      "currentDeviceMode": "COLOR"
+      }
+  }
+}
