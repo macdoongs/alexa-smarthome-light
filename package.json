@@ -1,0 +1,19 @@
+{
+  "name": "skill-smarthome-light",
+  "version": "0.1.0",
+  "description": "Alexa skills smarthome light",
+  "scripts": {
+    "start": "node ./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mac0314/skill-smarthome-light.git"
+  },
+  "author": "Youngmin Kim",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mac0314/skill-smarthome-light/issues"
+  },
+  "dependencies": {
+  }
+}

@@ -1,15 +1,14 @@
 # skill-smarthome-light
 ## Alexa skill smarthome lights
+### Use AWS lambda
 
------------------------------------------------------------------
 # 알렉사 스킬
-
 ## 스마트홈 전등
+### 람다를 통해 알렉사와 연동 가능
 
------------------------------------------------------------------
 ### 알렉사 요청/응답 템플릿
 
-람다를 통해 테스트 가능
+람다를 테스트 이벤트를 통해 확인 가능
 
 #### 밝기(Brightness)
 [참조](https://developer.amazon.com/docs/device-apis/alexa-brightnesscontroller.html)

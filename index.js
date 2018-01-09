@@ -25,11 +25,11 @@ const RESPONSE_DISCOVER = "Discover.Response";
 
 const REQUEST_TURN_ON = "TurnOn";
 
-const RESPONSE_TURN_ON = "TurnOnConfirmation";
+const RESPONSE_TURN_ON = "Response";
 
 const REQUEST_TURN_OFF = "TurnOff";
 
-const RESPONSE_TURN_OFF = "TurnOffConfirmation";
+const RESPONSE_TURN_OFF = "Response";
 
 // errors
 
@@ -121,89 +121,364 @@ var handleDiscovery = function(event) {
 
   var header = createHeader(NAMESPACE_DISCOVERY, RESPONSE_DISCOVER, null);
 
-  // TODO modify
+  // TODO modify temporary response
   var payload = {
-
+    // Virtual devices
     "endpoints": [
       {
-
-        "endpointId":"appliance-001",
-
-        "friendlyName":"Smart Home Virtual Device",
-
-        "description":"Smart Light by Sample Manufacturer",
-
-        "manufacturerName":"yourManufacturerName",
-
-        "displayCategories":[
+        "endpointId": "appliance-001",
+        "friendlyName": "Living Room Light",
+        "description": "Smart Light by Sample Manufacturer",
+        "manufacturerName": "Sample Manufacturer",
+        "displayCategories": [
           "LIGHT"
         ],
-
-        "cookie":{
-
-           "extraDetail1":"optionalDetailForSkillAdapterToReferenceThisDevice",
-
-           "extraDetail2":"There can be multiple entries",
-
-           "extraDetail3":"but they should only be used for reference purposes.",
-
-           "extraDetail4":"This is not a suitable place to maintain current device state"
-
-         },
-
-         "capabilities":[
-            {
-               "type":"AlexaInterface",
-               "interface":"Alexa.ColorTemperatureController",
-               "version":"3",
-               "properties":{
-                  "supported":[
-                     {
-                        "name":"colorTemperatureInKelvin"
-                     }
-                  ],
-                  "proactivelyReported":true,
-                  "retrievable":true
-               }
-            },
-            {
-                "type": "AlexaInterface",
-                "interface": "Alexa.PowerController",
-                "version": "3",
-                "properties": {
-                  "supported": [ {
-                    "name": "powerState"
-                  } ],
-                  "proactivelyReported": true,
-                  "retrievable": true
-               }
-            },
-            {
-               "type":"AlexaInterface",
-               "interface":"Alexa",
-               "version":"3"
-            },
-            {
-               "type":"AlexaInterface",
-               "interface":"Alexa.ColorController",
-               "version":"3",
-               "properties":{
-                  "supported":[
-                     {
-                        "name":"color"
-                     }
-                  ],
-                  "proactivelyReported":true,
-                  "retrievable":true
-               }
+        "cookie": {
+          "extraDetail1": "optionalDetailForSkillAdapterToReferenceThisDevice",
+          "extraDetail2": "There can be multiple entries",
+          "extraDetail3": "but they should only be used for reference purposes",
+          "extraDetail4": "This is not a suitable place to maintain current device state"
+        },
+        "capabilities": [
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.ColorTemperatureController",
+            "version": "3",
+            "properties": {
+              "supported": [
+                {
+                  "name": "colorTemperatureInKelvin"
+                }
+              ],
+              "proactivelyReported": true,
+              "retrievable": true
             }
-         ]
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.EndpointHealth",
+            "version": "3",
+            "properties": {
+              "supported": [
+                {
+                  "name": "connectivity"
+                }
+              ],
+              "proactivelyReported": true,
+              "retrievable": true
+            }
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa",
+            "version": "3"
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.ColorController",
+            "version": "3",
+            "properties": {
+              "supported": [
+                {
+                  "name": "color"
+                }
+              ],
+              "proactivelyReported": true,
+              "retrievable": true
+            }
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.PowerController",
+            "version": "3",
+            "properties": {
+              "supported": [
+                {
+                  "name": "powerState"
+                }
+              ],
+              "proactivelyReported": true,
+              "retrievable": true
+            }
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.BrightnessController",
+            "version": "3",
+            "properties": {
+              "supported": [
+                {
+                  "name": "brightness"
+                }
+              ],
+              "proactivelyReported": true,
+              "retrievable": true
+            }
+          }
+        ]
+      },
+      {
+        "endpointId": "appliance-002",
+        "friendlyName": "Hallway Thermostat",
+        "description": "Smart Thermostat by Sample Manufacturer",
+        "manufacturerName": "Sample Manufacturer",
+        "displayCategories": [
+          "THERMOSTAT"
+        ],
+        "cookie": {},
+        "capabilities": [
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa",
+            "version": "3"
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.ThermostatController",
+            "version": "3",
+            "properties": {
+              "supported": [
+                {
+                  "name": "lowerSetpoint"
+                },
+                {
+                  "name": "targetSetpoint"
+                },
+                {
+                  "name": "upperSetpoint"
+                },
+                {
+                  "name": "thermostatMode"
+                }
+              ],
+              "proactivelyReported": true,
+              "retrievable": true
+            }
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.TemperatureSensor",
+            "version": "3",
+            "properties": {
+              "supported": [
+                {
+                  "name": "temperature"
+                }
+              ],
+              "proactivelyReported": false,
+              "retrievable": true
+            }
+          }
+        ]
+      },
+      {
+        "endpointId": "appliance-003",
+        "friendlyName": "Front Door",
+        "description": "Smart Lock by Sample Manufacturer",
+        "manufacturerName": "Sample Manufacturer",
+        "displayCategories": [
+          "SMARTLOCK"
+        ],
+        "cookie": {},
+        "capabilities": [
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.LockController",
+            "version": "3",
+            "properties": {
+              "supported": [
+                {
+                  "name": "lockState"
+                }
+              ],
+              "proactivelyReported": true,
+              "retrievable": true
+            }
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.EndpointHealth",
+            "version": "3",
+            "properties": {
+                "supported": [
+                    {
+                        "name": "connectivity"
+                    }
+                ],
+                "proactivelyReported": true,
+                "retrievable": true
+            }
+          }
+        ]
+      },
+      {
+        "endpointId": "appliance-004",
+        "friendlyName": "Goodnight",
+        "description": "Smart Scene by Sample Manufacturer",
+        "manufacturerName": "Sample Manufacturer",
+        "displayCategories": [
+          "SCENE_TRIGGER"
+        ],
+        "cookie": {},
+        "capabilities": [
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.SceneController",
+            "version": "3",
+            "supportsDeactivation": false,
+            "proactivelyReported": true
+          }
+        ]
+      },
+      {
+        "endpointId": "appliance-005",
+        "friendlyName": "Watch TV",
+        "description": "Smart Activity by Sample Manufacturer",
+        "manufacturerName": "Sample Manufacturer",
+        "displayCategories": [
+          "ACTIVITY_TRIGGER"
+        ],
+        "cookie": {},
+        "capabilities": [
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa",
+            "version": "3"
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.SceneController",
+            "version": "3",
+            "supportsDeactivation": true,
+            "proactivelyReported": true
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.EndpointHealth",
+            "version": "3",
+            "properties": {
+                "supported": [
+                    {
+                        "name": "connectivity"
+                    }
+                ],
+                "proactivelyReported": true,
+                "retrievable": true
+            }
+          }
+        ]
+      },
+      {
+        "endpointId": "appliance-006",
+        "friendlyName": "Back Door Camera",
+        "description": "Smart Camera by Sample Manufacturer",
+        "manufacturerName": "Sample Manufacturer",
+        "displayCategories": [
+          "CAMERA"
+        ],
+        "cookie": {},
+        "capabilities": [
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa",
+            "version": "3"
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.CameraStreamController",
+            "version": "3",
+            "cameraStreamConfigurations": [
+              {
+                "protocols": [
+                  "RTSP"
+                ],
+                "resolutions": [
+                  {
+                    "width": 1920,
+                    "height": 1080
+                  },
+                  {
+                    "width": 1280,
+                    "height": 720
+                  }
+                ],
+                "authorizationTypes": [
+                  "BASIC"
+                ],
+                "videoCodecs": [
+                  "H264",
+                  "MPEG2"
+                ],
+                "audioCodecs": [
+                  "G711"
+                ]
+              },
+              {
+                "protocols": [
+                  "RTSP"
+                ],
+                "resolutions": [
+                  {
+                    "width": 1920,
+                    "height": 1080
+                  },
+                  {
+                    "width": 1280,
+                    "height": 720
+                  }
+                ],
+                "authorizationTypes": [
+                  "NONE"
+                ],
+                "videoCodecs": [
+                  "H264"
+                ],
+                "audioCodecs": [
+                  "AAC"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.PowerController",
+            "version": "3",
+            "properties": {
+              "supported": [
+                {
+                  "name": "powerState"
+                }
+              ],
+              "proactivelyReported": true,
+              "retrievable": true
+            }
+          },
+          {
+            "type": "AlexaInterface",
+            "interface": "Alexa.EndpointHealth",
+            "version": "3",
+            "properties": {
+                "supported": [
+                    {
+                        "name": "connectivity"
+                    }
+                ],
+                "proactivelyReported": true,
+                "retrievable": true
+            }
+          }
+        ]
       }
     ]
 
   };
 
-  return createDirective(header,payload);
+
+  var endpoint = {};
+
+  var event = createEvent(header, null, payload);
+
+  return createDirective(null, event);
 
 }// handleDiscovery
 
@@ -245,31 +520,41 @@ var handlePowerControl = function(event) {
 
 var handlePowerControlTurnOn = function(event) {
   var correlationToken = event.directive.header.correlationToken;
-  var header = createHeader(NAMESPACE_POWER_CONTROL, RESPONSE_TURN_ON, correlationToken);
+  var header = createHeader(NAMESPACE_ALEXA, RESPONSE_TURN_ON, correlationToken);
 
   var payload = {};
 
-  payload.code = 0;
-  payload.message = "turn on the light";
+  var endpoint = event.directive.endpoint;
+  delete endpoint.cookie;
 
-  return createDirective(header,payload);
+
+  var context = createContext(event, "powerState", "ON");
+
+  var event = createEvent(header, endpoint, payload)
+
+  return createDirective(context, event);
 }// handlePowerControlTurnOn
 
 
 var handlePowerControlTurnOff = function(event) {
   var correlationToken = event.directive.header.correlationToken;
-  var header = createHeader(NAMESPACE_POWER_CONTROL, RESPONSE_TURN_OFF, correlationToken);
+  var header = createHeader(NAMESPACE_ALEXA, RESPONSE_TURN_OFF, correlationToken);
 
   var payload = {};
 
-  payload.code = 0;
-  payload.message = "turn off the light";
+  var endpoint = event.directive.endpoint;
+  delete endpoint.cookie;
 
-  return createDirective(header, payload);
+  var context = createContext(event, "powerState", "OFF");
+
+  var event = createEvent(header, endpoint, payload)
+
+  return createDirective(context, event);
 }// handlePowerControlTurnOff
 
 
 var handlePowerLevelControl = function(event) {
+  // TODO modify temporary response
   var response = {
    "context":{
       "properties":[
@@ -306,6 +591,7 @@ var handlePowerLevelControl = function(event) {
 
 
 var handleBrightnessControl = function(event) {
+  // TODO modify temporary response
   var response = {
     "context": {
       "properties": [ {
@@ -340,6 +626,7 @@ var handleBrightnessControl = function(event) {
 
 
 var handleColorControl = function(event) {
+  // TODO modify temporary response
   var response = {
     "context": {
         "properties": [ {
@@ -366,7 +653,7 @@ var handleColorControl = function(event) {
             "scope": {
               "type": "BearerToken",
               "token": "access-token-from-Amazon"
-      },
+            },
             "endpointId": "appliance-001"
         },
         "payload": {}
@@ -378,6 +665,7 @@ var handleColorControl = function(event) {
 
 
 var handleColorTemperatureControl = function(event) {
+  // TODO modify temporary response
   var response = {
     "context": {
         "properties": [ {
@@ -415,9 +703,13 @@ var handleUnsupportedOperation = function(event) {
   var correlationToken = event.directive.header.correlationToken;
   var header = createHeader(NAMESPACE_POWER_CONTROL, ERROR_UNSUPPORTED_OPERATION, correlationToken);
 
+  var endpoint = {};
   var payload = {};
+  var context = {};
 
-  return createDirective(header,payload);
+  var event = createEvent(header, endpoint, payload)
+
+  return createDirective(context, event);
 
 }// handleUnsupportedOperation
 
@@ -433,7 +725,10 @@ var handleUnexpectedInfo = function(event) {
 
   };
 
-  return createDirective(header, payload);
+  var context = {};
+  var event = createEvent(header, null, payload)
+
+  return createDirective(context, event);
 
 }// handleUnexpectedInfo
 
@@ -458,8 +753,32 @@ var createMessageId = function() {
 
 }// createMessageId
 
+var createContext = function(event, name, value) {
 
-var createHeader = function(name, correlationToken) {
+  var context = {};
+
+  var propertyArray = [];
+
+  var propertyObject = {};
+
+  propertyObject.namespace = requestedNamespace;
+  propertyObject.name = name;
+  propertyObject.value = value;
+  propertyObject.timeOfSample = new Date().toJSON();
+  propertyObject.uncertaintyInMilliseconds = 500;
+
+  propertyArray.push(propertyObject);
+
+  context.properties = propertyArray;
+
+  log("context :", context);
+
+  return context;
+
+}// createContext
+
+
+var createHeader = function(namespace, name, correlationToken) {
 
   var header = {
     "messageId": createMessageId(),
@@ -482,21 +801,34 @@ var createHeader = function(name, correlationToken) {
 }// createHeader
 
 
-var createEvent = function(namespace, header, endpoint, payload) {
+var createEvent = function(header, endpoint, payload) {
+  var event = {};
 
+  event.header = header;
+  event.payload = payload;
+
+  if(endpoint === null){
+  }else{
+    event.endpoint = endpoint;
+  }
+
+  log("event :", event);
+
+  return event;
 }// createEvent
 
 
-var createDirective = function(header, payload) {
-  var directive = {
-    "event":{
-      "header" : header,
+var createDirective = function(context, event) {
+  var directive = {};
 
-      "payload" : payload
-    }
+  directive.event = event;
+
+  if(context === null){
+  }else{
+    directive.context = context;
   }
 
-  //log("create", directive);
+  log("directive :", directive);
 
   return directive;
 
