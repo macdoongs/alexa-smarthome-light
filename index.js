@@ -366,14 +366,14 @@ function handlePowerLevelControl(event, callback) {
   switch (requestedName) {
 
     case NAME_REQUEST_ADJUST_POWER_LEVEL :
-      adjustPowerLevel(function(error, directive){
+      adjustPowerLevel(event, function(error, directive){
         callback(null, directive);
       });
 
       break;
 
     case NAME_REQUEST_SET_POWER_LEVEL :
-      setPowerLevel(function(error, directive){
+      setPowerLevel(event, function(error, directive){
         callback(null, directive);
       });
 
@@ -390,7 +390,12 @@ function handlePowerLevelControl(event, callback) {
   }// switch
 }
 
-function adjustPowerLevel(callback) {
+function adjustPowerLevel(event, callback) {
+  var correlationToken = event.directive.header.correlationToken;
+  var endpoint = event.directive.endpoint;
+
+  delete endpoint.cookie;
+
   var directive = {
    "context":{
       "properties":[
@@ -425,7 +430,7 @@ function adjustPowerLevel(callback) {
   callback(null, directive);
 }// handlePowerLevelControl
 
-function setPowerLevel(callback) {
+function setPowerLevel(event, callback) {
   // TODO modify temporary response
   var response = {
    "context":{
@@ -497,41 +502,67 @@ function handleBrightnessControl(event, callback) {
 
 
 function handleColorControl(event, callback) {
-  // TODO modify temporary response
-  var response = {
-    "context": {
-        "properties": [ {
-            "namespace": "Alexa.ColorController",
-            "name": "color",
-            "value": {
-                "hue": 350.5,
-                "saturation": 0.7138,
-                "brightness": 0.6524
-            },
-            "timeOfSample": "2017-02-03T16:20:50.52Z",
-            "uncertaintyInMilliseconds": 1000
-        } ]
-    },
-    "event": {
-        "header": {
-            "namespace": "Alexa",
-            "name": "Response",
-            "payloadVersion": "3",
-            "messageId": "5f8a426e-01e4-4cc9-8b79-65f8bd0fd8a4",
-            "correlationToken": "dFMb0z+PgpgdDmluhJ1LddFvSqZ/jCc8ptlAKulUj90jSqg=="
-        },
-        "endpoint": {
-            "scope": {
-              "type": "BearerToken",
-              "token": "access-token-from-Amazon"
-            },
-            "endpointId": "appliance-001"
-        },
-        "payload": {}
-    }
-  };
+  var correlationToken = event.directive.header.correlationToken;
+  var endpoint = event.directive.endpoint;
+  var payload = {};
 
-  callback(null, response);
+  // Request query
+  var deviceId = "0"; // event.directive.endpoint.endpointId;
+  const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
+
+  const onoff = SL_API_POWER_OFF;
+  const level = 1000;
+
+  const color = event.directive.payload.color;
+
+  var body = {};
+  body.onoff = onoff;
+  body.level = level;
+
+  // color
+  body.hue = color.hue;
+  body.saturation = color.saturation;
+  body.brightness = color.brightness;
+
+  var data = {
+    url: lightUrl,
+    form: body
+  }
+
+  // request gateway
+  request.post(data, function(error, httpResponse, body){
+    // Make Alexa response
+    async.parallel({
+      header: function(callback){
+        createHeader(NAMESPACE_ALEXA, NAME_RESPONSE, correlationToken, function (error, header) {
+          callback(null, header);
+        });
+      },
+      context: function(callback){
+        createContext(event, NAME_RESPONSE_COLOR, color, function(error, context){
+          callback(null, context);
+        });
+      }
+    }, function(error, results){
+      const header = results.header;
+      const context = results.context;
+
+      async.waterfall([
+        function(callback){
+          createEvent(header, endpoint, payload, function (error, event) {
+            callback(null, event);
+          });
+        },
+        function(event, callback){
+          createDirective(context, event, function(error, directive){
+            callback(null, directive);
+          });
+        }
+      ], function(error, result){
+        callback(null, result);
+      });
+    });
+  });
 }// handleColorControl
 
 
