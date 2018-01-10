@@ -184,7 +184,7 @@ function handleDiscovery(event, callback){
 
   async.parallel({
     header: function(callback){
-      createHeader(NAMESPACE_DISCOVERY, NAME_RESPONSE, null, function(error, header){
+      createHeader(NAMESPACE_DISCOVERY, NAME_RESPONSE_DISCOVER, null, function(error, header){
         callback(null, header);
       });
     },
