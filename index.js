@@ -87,6 +87,15 @@ const NAME_RESPONSE_COLOR = "color";
 const NAME_RESPONSE_COLOR_TEMPERATURE = "colorTemperatureInKelvin";
 
 
+/* parameters */
+// alexa smart light
+const ALEXA_SL_POWER_ON = "ON";
+const ALEXA_SL_POWER_OFF = "OFF";
+
+// system light API
+const SL_API_POWER_ON = "on";
+const SL_API_POWER_OFF = "off";
+
 /***********
  version
 ********* */
@@ -98,7 +107,7 @@ const PAYLOAD_VERSION = "3";
 ********* */
 const request = require("request");
 const config = require("config.json")("./config/config.json");
-
+const async = require("async");
 
 
 // Temp Light's gateway IP address
@@ -114,107 +123,137 @@ exports.handler = function (event, context, callback) {
   requestedNamespace = event.directive.header.namespace;
   requestedName = event.directive.header.name;
 
-  var response = null;
-
   try {
     switch (requestedNamespace) {
       case NAMESPACE_DISCOVERY:
-        response = handleDiscovery(event);
+        handleDiscovery(event, function(error, directive){
+          callback(null, directive);
+        });
 
         break;
       case NAMESPACE_POWER_CONTROL:
-        response = handlePowerControl(event);
+        handlePowerControl(event, function(error, directive){
+          callback(null, directive);
+        });
 
         break;
       case NAMESPACE_POWER_LEVEL_CONTROL:
-        response = handlePowerLevelControl(event);
+        handlePowerLevelControl(event, function(error, directive){
+          callback(null, directive);
+        });
 
         break;
       case NAMESPACE_BRIGHTNESS_CONTROL:
-        response = handleBrightnessControl(event);
+        handleBrightnessControl(event, function(error, directive){
+          callback(null, directive);
+        });
 
         break;
       case NAMESPACE_COLOR_CONTROL:
-        response = handleColorControl(event);
+        handleColorControl(event, function(error, directive){
+          callback(null, directive);
+        });
 
         break;
       case NAMESPACE_COLOR_TEMPERATURE_CONTROL:
-        response = handleColorTemperatureControl(event);
+        handleColorTemperatureControl(event, function(error, directive){
+          callback(null, directive);
+        });
 
         break;
       default:
         log("Error", "Unsupported namespace: " + requestedNamespace);
 
-        response = handleUnexpectedInfo(event);
+        handleUnexpectedInfo(event, function(error, directive){
+          callback(null, directive);
+        });
+
         break;
     }// switch
   } catch (error) {
     log("Error", error);
   }// try-catch
-
-  callback(null, response);
-}// exports.handler
+};// exports.handler
 
 
-var handleDiscovery = function(event) {
-  var header = createHeader(NAMESPACE_DISCOVERY, NAME_RESPONSE, null);
-  var endpoints = createEndpoints();
+function handleDiscovery(event, callback) {
+  async.parallel({
+    header: function(callback){
+      createHeader(NAMESPACE_DISCOVERY, NAME_RESPONSE, null, function(error, header){
+        callback(null, header);
+      });
+    },
+    payload: function(callback){
+      createEndpoints(function(error, endpoints){
+        var payload = {};
 
-  // TODO modify temporary response
-  var payload = {
-    // Virtual devices
-    "endpoints": endpoints
-  };
+        payload.endpoints = endpoints;
 
-  var event = createEvent(header, null, payload);
+        callback(null, payload);
+      });
+    }
+  }, function(error, results){
+    const header = results.header;
+    const payload = results.payload;
 
-  return createDirective(null, event);
+    async.waterfall([
+      function(callback){
+        createEvent(header, null, payload, function (error, event) {
+          callback(null, event);
+        });
+      },
+      function(event, callback){
+        createDirective(null, event, function(error, directive){
+          callback(null, directive);
+        });
+      }
+    ], function(error, result){
+      callback(null, result);
+    });
+  });
 }// handleDiscovery
 
 
-var handlePowerControl = function(event) {
-  var response = null;
-
+function handlePowerControl(event, callback) {
   switch (requestedName) {
-
     case NAME_REQUEST_TURN_ON :
-
-      response = handlePowerControlTurnOn(event);
+      handlePowerControlTurnOn(event, function(error, directive){
+        callback(null, directive);
+      });
 
       break;
 
     case NAME_REQUEST_TURN_OFF :
-
-      response = handlePowerControlTurnOff(event);
+      handlePowerControlTurnOff(event, function(error, directive){
+        callback(null, directive);
+      });
 
       break;
 
     default:
-
       log("Error", "Unsupported operation" + requestedName);
 
-      response = handleUnsupportedOperation(event);
+      handleUnsupportedOperation(event, function(error, directive){
+        callback(null, directive);
+      });
 
       break;
-
   }// switch
-
-  return response;
 }// handlePowerControl
 
 
-var handlePowerControlTurnOn = function(event) {
+function handlePowerControlTurnOn(event, callback) {
   var correlationToken = event.directive.header.correlationToken;
   var endpoint = event.directive.endpoint;
   var payload = {};
 
   delete endpoint.cookie;
 
-  // Request query
-  var deviceId = "0"
+  // make query
+  var deviceId = "0" // event.directive.endpoint.endpointId;
   const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
 
-  var onoff = "on";
+  var onoff = SL_API_POWER_ON;
   var level = 1000;
 
   var body = {};
@@ -226,25 +265,44 @@ var handlePowerControlTurnOn = function(event) {
     form: body
   }
 
+  // request gateway
   request.post(data, function(error, httpResponse, body){
-    log("body", data);
+    // Make Alexa response
+    async.parallel({
+      header: function(callback){
+        createHeader(NAMESPACE_ALEXA, NAME_RESPONSE, correlationToken, function (error, header) {
+          callback(null, header);
+        });
+      },
+      context: function(callback){
+        createContext(event, NAME_RESPONSE_POWER, ALEXA_SL_POWER_ON, function(error, context){
+          callback(null, context);
+        });
+      }
+    }, function(error, results){
+      const header = results.header;
+      const context = results.context;
 
+      async.waterfall([
+        function(callback){
+          createEvent(header, endpoint, payload, function (error, event) {
+            callback(null, event);
+          });
+        },
+        function(event, callback){
+          createDirective(context, event, function(error, directive){
+            callback(null, directive);
+          });
+        }
+      ], function(error, result){
+        callback(null, result);
+      });
+    });
   });
-
-
-  // Make Alexa response
-
-  var header = createHeader(NAMESPACE_ALEXA, NAME_RESPONSE, correlationToken);
-
-  var context = createContext(event, "powerState", "ON");
-
-  var event = createEvent(header, endpoint, payload)
-
-  return createDirective(context, event);
 }// handlePowerControlTurnOn
 
 
-var handlePowerControlTurnOff = function(event) {
+function handlePowerControlTurnOff(event, callback) {
   var correlationToken = event.directive.header.correlationToken;
   var endpoint = event.directive.endpoint;
   var payload = {};
@@ -255,7 +313,7 @@ var handlePowerControlTurnOff = function(event) {
   var deviceId = "0"; // event.directive.endpoint.endpointId;
   const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
 
-  var onoff = "off";
+  var onoff = SL_API_POWER_OFF;
   var level = 1000;
 
   var body = {};
@@ -267,54 +325,73 @@ var handlePowerControlTurnOff = function(event) {
     form: body
   }
 
+  // request gateway
   request.post(data, function(error, httpResponse, body){
+    // Make Alexa response
+    async.parallel({
+      header: function(callback){
+        createHeader(NAMESPACE_ALEXA, NAME_RESPONSE, correlationToken, function (error, header) {
+          callback(null, header);
+        });
+      },
+      context: function(callback){
+        createContext(event, NAME_RESPONSE_POWER, ALEXA_SL_POWER_OFF, function(error, context){
+          callback(null, context);
+        });
+      }
+    }, function(error, results){
+      const header = results.header;
+      const context = results.context;
 
+      async.waterfall([
+        function(callback){
+          createEvent(header, endpoint, payload, function (error, event) {
+            callback(null, event);
+          });
+        },
+        function(event, callback){
+          createDirective(context, event, function(error, directive){
+            callback(null, directive);
+          });
+        }
+      ], function(error, result){
+        callback(null, result);
+      });
+    });
   });
-
-  // Make Alexa response
-  var header = createHeader(NAMESPACE_ALEXA, NAME_RESPONSE, correlationToken);
-
-  var context = createContext(event, "powerState", "OFF");
-
-  var event = createEvent(header, endpoint, payload)
-
-  var directive = createDirective(context, event);
-
-  return directive;
 }// handlePowerControlTurnOff
 
-var handlePowerLevelControl = function(event) {
-  var response = null;
 
+function handlePowerLevelControl(event, callback) {
   switch (requestedName) {
 
     case NAME_REQUEST_ADJUST_POWER_LEVEL :
-
-      response = adjustPowerLevel();
+      adjustPowerLevel(function(error, directive){
+        callback(null, directive);
+      });
 
       break;
 
     case NAME_REQUEST_SET_POWER_LEVEL :
-
-      response = setPowerLevel();
+      setPowerLevel(function(error, directive){
+        callback(null, directive);
+      });
 
       break;
 
     default:
-
       log("Error", "Unsupported operation" + requestedName);
 
-      response = handleUnsupportedOperation(event);
+      handleUnsupportedOperation(event, function(error, directive){
+        callback(null, directive);
+      });
 
       break;
-
   }// switch
-
-  return response;
 }
 
-var adjustPowerLevel = function() {
-  var response = {
+function adjustPowerLevel(callback) {
+  var directive = {
    "context":{
       "properties":[
          {
@@ -345,10 +422,10 @@ var adjustPowerLevel = function() {
    }
 };
 
-  return response;
+  callback(null, directive);
 }// handlePowerLevelControl
 
-var setPowerLevel = function() {
+function setPowerLevel(callback) {
   // TODO modify temporary response
   var response = {
    "context":{
@@ -381,10 +458,10 @@ var setPowerLevel = function() {
    }
 };
 
-  return response;
+  callback(null, response);
 }// handlePowerLevelControl
 
-var handleBrightnessControl = function(event) {
+function handleBrightnessControl(event, callback) {
   // TODO modify temporary response
   var response = {
     "context": {
@@ -415,11 +492,11 @@ var handleBrightnessControl = function(event) {
     }
   };
 
-  return response;
+  callback(null, response);
 }// handleBrightnessControl
 
 
-var handleColorControl = function(event) {
+function handleColorControl(event, callback) {
   // TODO modify temporary response
   var response = {
     "context": {
@@ -454,11 +531,11 @@ var handleColorControl = function(event) {
     }
   };
 
-  return response;
+  callback(null, response);
 }// handleColorControl
 
 
-var handleColorTemperatureControl = function(event) {
+function handleColorTemperatureControl(event, callback) {
   // TODO modify temporary response
   var response = {
     "context": {
@@ -489,39 +566,65 @@ var handleColorTemperatureControl = function(event) {
     }
   };
 
-  return response;
+  callback(null, response);
 }// handleColorTemperatureControl
 
 
-var handleUnsupportedOperation = function(event) {
+function handleUnsupportedOperation(event, callback) {
   var correlationToken = event.directive.header.correlationToken;
-  var header = createHeader(NAMESPACE_POWER_CONTROL, NAME_ERROR_UNSUPPORTED_OPERATION, correlationToken);
 
   var endpoint = {};
   var payload = {};
   var context = {};
 
-  var event = createEvent(header, endpoint, payload)
-
-  return createDirective(context, event);
+  async.waterfall([
+    function(callback){
+      createHeader(NAMESPACE_POWER_CONTROL, NAME_ERROR_UNSUPPORTED_OPERATION, correlationToken, function(error, header){
+        callback(null, header);
+      });
+    },
+    function(header, callback){
+      createEvent(header, endpoint, payload, function(error, event){
+        callback(null, event);
+      });
+    },
+    function(event, callback){
+      createDirective(context, event, function(error, directive){
+        callback(null, directive);
+      });
+    }
+  ], function(error, result){
+    callback(null, result);
+  });
 }// handleUnsupportedOperation
 
 
-var handleUnexpectedInfo = function(event) {
+function handleUnexpectedInfo(event, callback) {
   var correlationToken = event.directive.header.correlationToken;
-
-  var header = createHeader(NAMESPACE_POWER_CONTROL, NAME_ERROR_UNEXPECTED_INFO, correlationToken);
-
   var payload = {
-
     "faultingParameter" : requestedNamespace
-
   };
-
   var context = {};
-  var event = createEvent(header, null, payload)
 
-  return createDirective(context, event);
+  async.waterfall([
+    function(callback){
+      createHeader(NAMESPACE_POWER_CONTROL, NAME_ERROR_UNEXPECTED_INFO, correlationToken, function(error, header){
+        callback(null, header);
+      });
+    },
+    function(header, callback){
+      createEvent(header, null, payload, function(error, event){
+        callback(null, event);
+      });
+    },
+    function(event, callback){
+      createDirective(context, event, function(error, directive){
+        callback(null, directive);
+      });
+    }
+  ], function(error, result){
+    callback(null, result);
+  });
 }// handleUnexpectedInfo
 
 
@@ -544,7 +647,7 @@ var createMessageId = function() {
   return uuid;
 }// createMessageId
 
-var createEndpoints = function() {
+function createEndpoints(callback) {
   var endpoints = [];
 
   // Test data
@@ -900,10 +1003,10 @@ var createEndpoints = function() {
 
   endpoints.push(endpoint1, endpoint2, endpoint3, endpoint4, endpoint5, endpoint6);
 
-  return endpoints;
+  callback(null, endpoints);
 }// createEndpoints
 
-var createContext = function(event, name, value) {
+function createContext(event, name, value, callback) {
 
   var context = {};
 
@@ -923,12 +1026,11 @@ var createContext = function(event, name, value) {
 
   log("context :", context);
 
-  return context;
+  callback(null, context);
 }// createContext
 
 
-var createHeader = function(namespace, name, correlationToken) {
-
+function createHeader(namespace, name, correlationToken, callback) {
   var header = {
     "messageId": createMessageId(),
 
@@ -945,11 +1047,11 @@ var createHeader = function(namespace, name, correlationToken) {
 
   //log("create", header);
 
-  return header;
+  callback(null, header);
 }// createHeader
 
 
-var createEvent = function(header, endpoint, payload) {
+function createEvent(header, endpoint, payload, callback) {
   var event = {};
 
   event.header = header;
@@ -962,11 +1064,11 @@ var createEvent = function(header, endpoint, payload) {
 
   log("event :", event);
 
-  return event;
+  callback(null, event);
 }// createEvent
 
 
-var createDirective = function(context, event) {
+function createDirective(context, event, callback) {
   var directive = {};
 
   directive.event = event;
@@ -978,7 +1080,7 @@ var createDirective = function(context, event) {
 
   log("directive :", directive);
 
-  return directive;
+  callback(null, directive);
 }// createDirective
 
 
