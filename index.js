@@ -46,6 +46,14 @@ const PAYLOAD_VERSION = "3";
 
 var requestedNamespace = "";
 
+
+const request = require("request");
+const config = require("config.json")("./config/config.json");
+
+// Temp Light's gateway IP address
+const BASE_URL = config.sl.gw;
+
+
 // entry
 
 exports.handler = function (event, context, callback) {
@@ -519,6 +527,27 @@ var handlePowerControl = function(event) {
 
 
 var handlePowerControlTurnOn = function(event) {
+  // Request query
+  var deviceId = "0"
+  const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
+
+  var onoff = "on";
+  var level = 1000;
+
+  var body = {};
+  body.onoff = onoff;
+  body.level = level;
+
+  var data = {
+    url: lightUrl,
+    form: body
+  }
+
+  request.post(data, function(error, httpResponse, body){
+
+  });
+
+  // Make Alexa response
   var correlationToken = event.directive.header.correlationToken;
   var header = createHeader(NAMESPACE_ALEXA, RESPONSE_TURN_ON, correlationToken);
 
@@ -526,7 +555,6 @@ var handlePowerControlTurnOn = function(event) {
 
   var endpoint = event.directive.endpoint;
   delete endpoint.cookie;
-
 
   var context = createContext(event, "powerState", "ON");
 
@@ -537,6 +565,27 @@ var handlePowerControlTurnOn = function(event) {
 
 
 var handlePowerControlTurnOff = function(event) {
+  // Request query
+  var deviceId = "0"
+  const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
+
+  var onoff = "off";
+  var level = 1000;
+
+  var body = {};
+  body.onoff = onoff;
+  body.level = level;
+
+  var data = {
+    url: lightUrl,
+    form: body
+  }
+
+  request.post(data, function(error, httpResponse, body){
+
+  });
+
+  // Make Alexa response
   var correlationToken = event.directive.header.correlationToken;
   var header = createHeader(NAMESPACE_ALEXA, RESPONSE_TURN_OFF, correlationToken);
 

@@ -15,5 +15,7 @@
     "url": "https://github.com/mac0314/skill-smarthome-light/issues"
   },
   "dependencies": {
+    "config.json": "0.0.4",
+    "request": "^2.83.0"
   }
 }
