@@ -2,30 +2,46 @@
 ## Alexa skill smarthome lights
 ### Use AWS lambda
 
+- config.example -> config
+- npm install
+- upload this project to lambda
+
 # 알렉사 스킬
 ## 스마트홈 전등
 ### 람다를 통해 알렉사와 연동 가능
 
-### 알렉사 요청/응답 템플릿
+- config.example 폴더 -> config로 수정
+- command에서 npm install로 모듈을 설치
+- 이 프로젝트 폴더를 압축해서 AWS 람다에 zip 형태로 올리면 실행 가능
 
-람다를 테스트 이벤트를 통해 확인 가능
+#### 알렉사 skill 구성하기
 
-#### 밝기(Brightness)
+- 스킬 구성하기(Build An Alexa How To Skill) [링크](https://github.com/alexa/skill-sample-nodejs-howto/blob/master/instructions/0-intro.md)
+- 스킬에 아마존 로그인 연동하기(Login with Amazon, LWA) [링크](https://developer.amazon.com/blogs/post/Tx3CX1ETRZZ2NPC/Alexa-Account-Linking-5-Steps-to-Seamlessly-Link-Your-Alexa-Skill-with-Login-wit)
+
+- 아마존 개발자 홈(Amazon developer) [링크](https://developer.amazon.com/alexa-skills-kit)
+
+#### 알렉사 요청/응답 템플릿
+
+- request 코드를 람다 테스트 이벤트로 구성하여 테스트 가능
+- response template의 형태로 응답이 구성되어야 함.
+
+##### 밝기(Brightness)
 [참조](https://developer.amazon.com/docs/device-apis/alexa-brightnesscontroller.html)
-#### 색(Color)
+##### 색(Color)
 [참조](https://developer.amazon.com/docs/device-apis/alexa-colorcontroller.html)
-#### 색온도(Color Temperature)
+##### 색온도(Color Temperature)
 [참조](https://developer.amazon.com/docs/device-apis/alexa-colortemperaturecontroller.html)
-#### 발견(Discovery)
+##### 발견(Discovery)
 [참조](https://developer.amazon.com/docs/device-apis/alexa-discovery.html)
-#### 오류(Error)
+##### 오류(Error)
 [참조](https://developer.amazon.com/docs/device-apis/alexa-errorresponse.html#error-message-format)
-#### 전원(Power)
+##### 전원(Power)
 [참조](https://developer.amazon.com/docs/device-apis/alexa-powercontroller.html)
-#### 전원 세기(Power level)
+##### 전원 세기(Power level)
 [참조](https://developer.amazon.com/docs/device-apis/alexa-powerlevelcontroller.html)
 
 -----------------------------------------------------------------
 
-#### 참고
-[링크](https://developer.amazon.com/blogs/post/TxWSCWZI9SPYNT/Coding-Smart-Home-Skill-Adapter-Directives-Using-Node-js)
+##### 참고
+코드 작성(Code) [링크](https://developer.amazon.com/blogs/post/TxWSCWZI9SPYNT/Coding-Smart-Home-Skill-Adapter-Directives-Using-Node-js)
