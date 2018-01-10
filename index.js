@@ -96,6 +96,8 @@ const ALEXA_SL_POWER_OFF = "OFF";
 const SL_API_POWER_ON = "on";
 const SL_API_POWER_OFF = "off";
 
+const DEFAULT_POWER_LEVEL = 1000;
+
 /***********
  version
 ********* */
@@ -117,14 +119,15 @@ var requestedNamespace = "";
 var requestedName = "";
 
 // entry
-exports.handler = function (event, context, callback) {
+exports.handler = function(event, context, callback){
+  console.log("handler");
   log("Received Directive", event);
 
   requestedNamespace = event.directive.header.namespace;
   requestedName = event.directive.header.name;
 
   try {
-    switch (requestedNamespace) {
+    switch(requestedNamespace){
       case NAMESPACE_DISCOVERY:
         handleDiscovery(event, function(error, directive){
           callback(null, directive);
@@ -170,13 +173,15 @@ exports.handler = function (event, context, callback) {
 
         break;
     }// switch
-  } catch (error) {
+  } catch(error){
     log("Error", error);
   }// try-catch
 };// exports.handler
 
 
-function handleDiscovery(event, callback) {
+function handleDiscovery(event, callback){
+  console.log("handleDiscovery");
+
   async.parallel({
     header: function(callback){
       createHeader(NAMESPACE_DISCOVERY, NAME_RESPONSE, null, function(error, header){
@@ -198,7 +203,7 @@ function handleDiscovery(event, callback) {
 
     async.waterfall([
       function(callback){
-        createEvent(header, null, payload, function (error, event) {
+        createEvent(header, null, payload, function(error, event){
           callback(null, event);
         });
       },
@@ -214,22 +219,22 @@ function handleDiscovery(event, callback) {
 }// handleDiscovery
 
 
-function handlePowerControl(event, callback) {
-  switch (requestedName) {
+function handlePowerControl(event, callback){
+  console.log("handlePowerControl");
+
+  switch(requestedName){
     case NAME_REQUEST_TURN_ON :
-      handlePowerControlTurnOn(event, function(error, directive){
+      handlePower(event, SL_API_POWER_ON, function(error, directive){
         callback(null, directive);
       });
 
       break;
-
     case NAME_REQUEST_TURN_OFF :
-      handlePowerControlTurnOff(event, function(error, directive){
+      handlePower(event, SL_API_POWER_OFF, function(error, directive){
         callback(null, directive);
       });
 
       break;
-
     default:
       log("Error", "Unsupported operation" + requestedName);
 
@@ -242,19 +247,14 @@ function handlePowerControl(event, callback) {
 }// handlePowerControl
 
 
-function handlePowerControlTurnOn(event, callback) {
-  var correlationToken = event.directive.header.correlationToken;
-  var endpoint = event.directive.endpoint;
-  var payload = {};
-
-  delete endpoint.cookie;
+function handlePower(event, onoff, callback){
+  console.log("handlePowerControlTurnOn");
 
   // make query
-  var deviceId = "0" // event.directive.endpoint.endpointId;
+  var deviceId = event.directive.endpoint.endpointId;
   const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
 
-  var onoff = SL_API_POWER_ON;
-  var level = 1000;
+  var level = DEFAULT_POWER_LEVEL;
 
   var body = {};
   body.onoff = onoff;
@@ -266,119 +266,31 @@ function handlePowerControlTurnOn(event, callback) {
   }
 
   // request gateway
-  request.post(data, function(error, httpResponse, body){
+  request.put(data, function(error, httpResponse, body){
     // Make Alexa response
-    async.parallel({
-      header: function(callback){
-        createHeader(NAMESPACE_ALEXA, NAME_RESPONSE, correlationToken, function (error, header) {
-          callback(null, header);
-        });
-      },
-      context: function(callback){
-        createContext(event, NAME_RESPONSE_POWER, ALEXA_SL_POWER_ON, function(error, context){
-          callback(null, context);
-        });
-      }
-    }, function(error, results){
-      const header = results.header;
-      const context = results.context;
-
-      async.waterfall([
-        function(callback){
-          createEvent(header, endpoint, payload, function (error, event) {
-            callback(null, event);
-          });
-        },
-        function(event, callback){
-          createDirective(context, event, function(error, directive){
-            callback(null, directive);
-          });
-        }
-      ], function(error, result){
-        callback(null, result);
-      });
+    makeControlResponse(event, NAME_RESPONSE_POWER, onoff, function(error, response){
+      callback(null, response);
     });
   });
-}// handlePowerControlTurnOn
+}// handlePower
 
 
-function handlePowerControlTurnOff(event, callback) {
-  var correlationToken = event.directive.header.correlationToken;
-  var endpoint = event.directive.endpoint;
-  var payload = {};
+function handlePowerLevelControl(event, callback){
+  console.log("handlePowerLevelControl");
 
-  delete endpoint.cookie;
-
-  // Request query
-  var deviceId = "0"; // event.directive.endpoint.endpointId;
-  const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
-
-  var onoff = SL_API_POWER_OFF;
-  var level = 1000;
-
-  var body = {};
-  body.onoff = onoff;
-  body.level = level;
-
-  var data = {
-    url: lightUrl,
-    form: body
-  }
-
-  // request gateway
-  request.post(data, function(error, httpResponse, body){
-    // Make Alexa response
-    async.parallel({
-      header: function(callback){
-        createHeader(NAMESPACE_ALEXA, NAME_RESPONSE, correlationToken, function (error, header) {
-          callback(null, header);
-        });
-      },
-      context: function(callback){
-        createContext(event, NAME_RESPONSE_POWER, ALEXA_SL_POWER_OFF, function(error, context){
-          callback(null, context);
-        });
-      }
-    }, function(error, results){
-      const header = results.header;
-      const context = results.context;
-
-      async.waterfall([
-        function(callback){
-          createEvent(header, endpoint, payload, function (error, event) {
-            callback(null, event);
-          });
-        },
-        function(event, callback){
-          createDirective(context, event, function(error, directive){
-            callback(null, directive);
-          });
-        }
-      ], function(error, result){
-        callback(null, result);
-      });
-    });
-  });
-}// handlePowerControlTurnOff
-
-
-function handlePowerLevelControl(event, callback) {
-  switch (requestedName) {
-
+  switch(requestedName){
     case NAME_REQUEST_ADJUST_POWER_LEVEL :
       adjustPowerLevel(event, function(error, directive){
         callback(null, directive);
       });
 
       break;
-
     case NAME_REQUEST_SET_POWER_LEVEL :
       setPowerLevel(event, function(error, directive){
         callback(null, directive);
       });
 
       break;
-
     default:
       log("Error", "Unsupported operation" + requestedName);
 
@@ -390,11 +302,8 @@ function handlePowerLevelControl(event, callback) {
   }// switch
 }
 
-function adjustPowerLevel(event, callback) {
-  var correlationToken = event.directive.header.correlationToken;
-  var endpoint = event.directive.endpoint;
-
-  delete endpoint.cookie;
+function adjustPowerLevel(event, callback){
+  console.log("adjustPowerLevel");
 
   var directive = {
    "context":{
@@ -430,44 +339,66 @@ function adjustPowerLevel(event, callback) {
   callback(null, directive);
 }// handlePowerLevelControl
 
-function setPowerLevel(event, callback) {
-  // TODO modify temporary response
-  var response = {
-   "context":{
-      "properties":[
-         {
-            "namespace":"Alexa.PowerLevelController",
-            "name":"powerLevel",
-            "value": 42,
-            "timeOfSample":"2017-02-03T16:20:50.52Z",
-            "uncertaintyInMilliseconds": 0
-         }
-      ]
-   },
-   "event":{
-      "header":{
-         "namespace":"Alexa",
-         "name":"Response",
-         "messageId":"30d2cd1a-ce4f-4542-aa5e-04bd0a6492d5",
-         "correlationToken":"dFMb0z+PgpgdDmluhJ1LddFvSqZ/jCc8ptlAKulUj90jSqg==",
-         "payloadVersion":"3"
-      },
-      "endpoint":{
-         "scope":{
-            "type":"BearerToken",
-            "token":"access-token-from-Amazon"
-         },
-         "endpointId":"appliance-001"
-      },
-      "payload":{ }
-   }
-};
+function setPowerLevel(event, callback){
+  console.log("setPowerLevel");
 
-  callback(null, response);
-}// handlePowerLevelControl
+  // Request query
+  const deviceId = event.directive.endpoint.endpointId;
+  const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
 
-function handleBrightnessControl(event, callback) {
-  // TODO modify temporary response
+  const onoff = SL_API_POWER_ON;
+  const level = event.directive.payload.powerLevel;
+
+  var body = {};
+  body.onoff = onoff;
+  body.level = level;
+
+  var data = {
+    url: lightUrl,
+    form: body
+  }
+
+  // request gateway
+  request.put(data, function(error, httpResponse, body){
+    // Make Alexa response
+    makeControlResponse(event, NAME_RESPONSE_POWER_LEVEL, level, function(error, response){
+      callback(null, response);
+    });
+  });
+}
+
+function handleBrightnessControl(event, callback){
+  console.log("handleBrightnessControl");
+
+  switch(requestedName){
+    case NAME_REQUEST_ADJUST_BRIGHTNESS :
+      adjustBrightness(event, function(error, directive){
+        callback(null, directive);
+      });
+
+      break;
+
+    case NAME_REQUEST_SET_BRIGHTNESS :
+      setBrightness(event, function(error, directive){
+        callback(null, directive);
+      });
+
+      break;
+
+    default:
+      log("Error", "Unsupported operation" + requestedName);
+
+      handleUnsupportedOperation(event, function(error, directive){
+        callback(null, directive);
+      });
+
+      break;
+  }// switch
+}// handleBrightnessControl
+
+function adjustBrightness(event, callback){
+  console.log("adjustBrightness");
+
   var response = {
     "context": {
       "properties": [ {
@@ -498,20 +429,50 @@ function handleBrightnessControl(event, callback) {
   };
 
   callback(null, response);
-}// handleBrightnessControl
+}
 
-
-function handleColorControl(event, callback) {
-  var correlationToken = event.directive.header.correlationToken;
-  var endpoint = event.directive.endpoint;
-  var payload = {};
+function setBrightness(event, callback){
+  console.log("setBrightness");
 
   // Request query
-  var deviceId = "0"; // event.directive.endpoint.endpointId;
+  const deviceId = event.directive.endpoint.endpointId;
   const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
 
-  const onoff = SL_API_POWER_OFF;
-  const level = 1000;
+  const onoff = SL_API_POWER_ON;
+  const level = DEFAULT_POWER_LEVEL;
+
+  const brightness = event.directive.payload.brightness;
+
+  var body = {};
+  body.onoff = onoff;
+  body.level = level;
+
+  // brightness
+  body.brightness = brightness;
+
+  var data = {
+    url: lightUrl,
+    form: body
+  }
+
+  // request gateway
+  request.put(data, function(error, httpResponse, body){
+    // Make Alexa response
+    makeControlResponse(event, NAME_RESPONSE_BRIGHTNESS, brightness, function(error, response){
+      callback(null, response);
+    });
+  });
+}
+
+function handleColorControl(event, callback){
+  console.log("handleColorControl");
+
+  // Request query
+  const deviceId = event.directive.endpoint.endpointId;
+  const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
+
+  const onoff = SL_API_POWER_ON;
+  const level = DEFAULT_POWER_LEVEL;
 
   const color = event.directive.payload.color;
 
@@ -530,43 +491,52 @@ function handleColorControl(event, callback) {
   }
 
   // request gateway
-  request.post(data, function(error, httpResponse, body){
+  request.put(data, function(error, httpResponse, body){
     // Make Alexa response
-    async.parallel({
-      header: function(callback){
-        createHeader(NAMESPACE_ALEXA, NAME_RESPONSE, correlationToken, function (error, header) {
-          callback(null, header);
-        });
-      },
-      context: function(callback){
-        createContext(event, NAME_RESPONSE_COLOR, color, function(error, context){
-          callback(null, context);
-        });
-      }
-    }, function(error, results){
-      const header = results.header;
-      const context = results.context;
-
-      async.waterfall([
-        function(callback){
-          createEvent(header, endpoint, payload, function (error, event) {
-            callback(null, event);
-          });
-        },
-        function(event, callback){
-          createDirective(context, event, function(error, directive){
-            callback(null, directive);
-          });
-        }
-      ], function(error, result){
-        callback(null, result);
-      });
+    makeControlResponse(event, NAME_RESPONSE_COLOR, color, function(error, response){
+      callback(null, response);
     });
   });
 }// handleColorControl
 
 
-function handleColorTemperatureControl(event, callback) {
+function handleColorTemperatureControl(event, callback){
+  console.log("handleColorTemperatureControl");
+
+  switch(requestedName){
+    case NAME_REQUEST_DECREASE_COLOR_TEMPERATURE :
+      decreaseColorTemperature(event, function(error, directive){
+        callback(null, directive);
+      });
+
+      break;
+    case NAME_REQUEST_INCREASE_COLOR_TEMPERATURE :
+      increaseColorTemperature(event, function(error, directive){
+        callback(null, directive);
+      });
+
+      break;
+    case NAME_REQUEST_SET_COLOR_TEMPERATURE :
+      setColorTemperature(event, function(error, directive){
+        callback(null, directive);
+      });
+
+      break;
+    default:
+      log("Error", "Unsupported operation" + requestedName);
+
+      handleUnsupportedOperation(event, function(error, directive){
+        callback(null, directive);
+      });
+
+      break;
+  }// switch
+}// handleColorTemperatureControl
+
+
+function decreaseColorTemperature(event, callback){
+  console.log("decreaseColorTemperature");
+
   // TODO modify temporary response
   var response = {
     "context": {
@@ -598,11 +568,84 @@ function handleColorTemperatureControl(event, callback) {
   };
 
   callback(null, response);
-}// handleColorTemperatureControl
+}
 
 
-function handleUnsupportedOperation(event, callback) {
-  var correlationToken = event.directive.header.correlationToken;
+function increaseColorTemperature(event, callback){
+  console.log("increaseColorTemperature");
+
+  // TODO modify temporary response
+  var response = {
+    "context": {
+        "properties": [ {
+            "namespace": "Alexa.ColorTemperatureController",
+            "name": "colorTemperatureInKelvin",
+            "value": 7500,
+            "timeOfSample": "2017-02-03T16:20:50.52Z",
+            "uncertaintyInMilliseconds": 500
+        } ]
+    },
+    "event": {
+        "header": {
+            "namespace": "Alexa",
+            "name": "Response",
+            "payloadVersion": "3",
+            "messageId": "5f8a426e-01e4-4cc9-8b79-65f8bd0fd8a4",
+            "correlationToken": "dFMb0z+PgpgdDmluhJ1LddFvSqZ/jCc8ptlAKulUj90jSqg=="
+        },
+        "endpoint": {
+            "scope": {
+              "type": "BearerToken",
+              "token": "access-token-from-Amazon"
+            },
+            "endpointId": "appliance-001"
+        },
+        "payload": {}
+    }
+  };
+
+  callback(null, response);
+}
+
+
+function setColorTemperature(event, callback){
+  console.log("setColorTemperature");
+
+  // Request query
+  const deviceId = event.directive.endpoint.endpointId;
+  const lightUrl = BASE_URL + "/device/" + deviceId + "/light";
+
+  const onoff = SL_API_POWER_ON;
+  const level = DEFAULT_POWER_LEVEL;
+
+  const colorTemperatureInKelvin = event.directive.payload.colorTemperatureInKelvin;
+
+  var body = {};
+  body.onoff = onoff;
+  body.level = level;
+
+  // color
+  body.colorTemp = color.colorTemperatureInKelvin;
+
+  var data = {
+    url: lightUrl,
+    form: body
+  }
+
+  // request gateway
+  request.put(data, function(error, httpResponse, body){
+    // Make Alexa response
+    makeControlResponse(event, NAME_RESPONSE_COLOR_TEMPERATURE, colorTemperatureInKelvin, function(error, response){
+      callback(null, response);
+    });
+  });
+}
+
+
+function handleUnsupportedOperation(event, callback){
+  console.log("handleUnsupportedOperation");
+
+  const correlationToken = event.directive.header.correlationToken;
 
   var endpoint = {};
   var payload = {};
@@ -630,8 +673,10 @@ function handleUnsupportedOperation(event, callback) {
 }// handleUnsupportedOperation
 
 
-function handleUnexpectedInfo(event, callback) {
-  var correlationToken = event.directive.header.correlationToken;
+function handleUnexpectedInfo(event, callback){
+  console.log("handleUnexpectedInfo");
+
+  const correlationToken = event.directive.header.correlationToken;
   var payload = {
     "faultingParameter" : requestedNamespace
   };
@@ -661,24 +706,24 @@ function handleUnexpectedInfo(event, callback) {
 
 // support functions
 
-var createMessageId = function() {
+var createMessageId = function(){
 
   var d = new Date().getTime();
 
-  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
 
-    var r = (d + Math.random()*16)%16 | 0;
+    var r =(d + Math.random()*16)%16 | 0;
 
     d = Math.floor(d/16);
 
-    return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    return(c=='x' ? r :(r&0x3|0x8)).toString(16);
 
   });
 
   return uuid;
 }// createMessageId
 
-function createEndpoints(callback) {
+function createEndpoints(callback){
   var endpoints = [];
 
   // Test data
@@ -775,6 +820,7 @@ function createEndpoints(callback) {
       }
     ]
   };
+
   var endpoint2 = {
     "endpointId": "appliance-002",
     "friendlyName": "Hallway Thermostat",
@@ -1032,12 +1078,105 @@ function createEndpoints(callback) {
     ]
   };
 
-  endpoints.push(endpoint1, endpoint2, endpoint3, endpoint4, endpoint5, endpoint6);
+  var endpoint7 = {
+    "endpointId": "appliance-007",
+    "friendlyName": "My Room Light",
+    "description": "Smart Light by Sample Manufacturer",
+    "manufacturerName": "Sample Manufacturer",
+    "displayCategories": [
+      "LIGHT"
+    ],
+    "cookie": {
+      "extraDetail1": "optionalDetailForSkillAdapterToReferenceThisDevice",
+      "extraDetail2": "There can be multiple entries",
+      "extraDetail3": "but they should only be used for reference purposes",
+      "extraDetail4": "This is not a suitable place to maintain current device state"
+    },
+    "capabilities": [
+      {
+        "type": "AlexaInterface",
+        "interface": "Alexa.ColorTemperatureController",
+        "version": "3",
+        "properties": {
+          "supported": [
+            {
+              "name": "colorTemperatureInKelvin"
+            }
+          ],
+          "proactivelyReported": true,
+          "retrievable": true
+        }
+      },
+      {
+        "type": "AlexaInterface",
+        "interface": "Alexa.EndpointHealth",
+        "version": "3",
+        "properties": {
+          "supported": [
+            {
+              "name": "connectivity"
+            }
+          ],
+          "proactivelyReported": true,
+          "retrievable": true
+        }
+      },
+      {
+        "type": "AlexaInterface",
+        "interface": "Alexa",
+        "version": "3"
+      },
+      {
+        "type": "AlexaInterface",
+        "interface": "Alexa.ColorController",
+        "version": "3",
+        "properties": {
+          "supported": [
+            {
+              "name": "color"
+            }
+          ],
+          "proactivelyReported": true,
+          "retrievable": true
+        }
+      },
+      {
+        "type": "AlexaInterface",
+        "interface": "Alexa.PowerController",
+        "version": "3",
+        "properties": {
+          "supported": [
+            {
+              "name": "powerState"
+            }
+          ],
+          "proactivelyReported": true,
+          "retrievable": true
+        }
+      },
+      {
+        "type": "AlexaInterface",
+        "interface": "Alexa.BrightnessController",
+        "version": "3",
+        "properties": {
+          "supported": [
+            {
+              "name": "brightness"
+            }
+          ],
+          "proactivelyReported": true,
+          "retrievable": true
+        }
+      }
+    ]
+  };
+
+  endpoints.push(endpoint1, endpoint2, endpoint3, endpoint4, endpoint5, endpoint6, endpoint7);
 
   callback(null, endpoints);
 }// createEndpoints
 
-function createContext(event, name, value, callback) {
+function createContext(event, name, value, callback){
 
   var context = {};
 
@@ -1061,7 +1200,7 @@ function createContext(event, name, value, callback) {
 }// createContext
 
 
-function createHeader(namespace, name, correlationToken, callback) {
+function createHeader(namespace, name, correlationToken, callback){
   var header = {
     "messageId": createMessageId(),
 
@@ -1082,7 +1221,7 @@ function createHeader(namespace, name, correlationToken, callback) {
 }// createHeader
 
 
-function createEvent(header, endpoint, payload, callback) {
+function createEvent(header, endpoint, payload, callback){
   var event = {};
 
   event.header = header;
@@ -1099,7 +1238,7 @@ function createEvent(header, endpoint, payload, callback) {
 }// createEvent
 
 
-function createDirective(context, event, callback) {
+function createDirective(context, event, callback){
   var directive = {};
 
   directive.event = event;
@@ -1115,6 +1254,48 @@ function createDirective(context, event, callback) {
 }// createDirective
 
 
-var log = function(title, msg) {
+function makeControlResponse(event, responseName, value, callback){
+  const correlationToken = event.directive.header.correlationToken;
+  const endpoint = event.directive.endpoint;
+  var payload = {};
+
+  // Request query
+  const deviceId = endpoint.endpointId;
+
+  // Make Alexa response
+  async.parallel({
+    header: function(callback){
+      createHeader(NAMESPACE_ALEXA, NAME_RESPONSE, correlationToken, function(error, header){
+        callback(null, header);
+      });
+    },
+    context: function(callback){
+      createContext(event, responseName, value, function(error, context){
+        callback(null, context);
+      });
+    }
+  }, function(error, results){
+    const header = results.header;
+    const context = results.context;
+
+    async.waterfall([
+      function(callback){
+        createEvent(header, endpoint, payload, function(error, event){
+          callback(null, event);
+        });
+      },
+      function(event, callback){
+        createDirective(context, event, function(error, directive){
+          callback(null, directive);
+        });
+      }
+    ], function(error, result){
+      callback(null, result);
+    });
+  });
+}
+
+
+var log = function(title, msg){
   console.log('**** ' + title + ': ' + JSON.stringify(msg));
 }// log
