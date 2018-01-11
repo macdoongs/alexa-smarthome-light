@@ -1,5 +1,5 @@
-# skill-smarthome-light
-## Alexa skill smarthome lights
+# alexa-smarthome-light
+## Alexa skill smarthome light
 ### Use AWS lambda
 
 - config.example -> config
@@ -13,6 +13,8 @@
 - config.example 폴더 -> config로 수정
 - command에서 npm install로 모듈을 설치
 - 이 프로젝트 폴더를 압축해서 AWS 람다에 zip 형태로 올리면 실행 가능
+  - [AWS CLI](https://docs.aws.amazon.com/ko_kr/cli/latest/userguide/cli-chap-welcome.html)를 활용하여 timeout에 걸리지 않고 zip파일을 올릴 수 있음
+    - 활용 방법 [링크](https://asyoulook.com/computers%20&%20internet/amazon-web-services-aws-lambda-timeout-while-trying-to-upload-updated-node-zip-file/915947)
 
 #### 알렉사 skill 구성하기
 
@@ -44,4 +46,5 @@
 -----------------------------------------------------------------
 
 ##### 참고
-코드 작성(Code) [링크](https://developer.amazon.com/blogs/post/TxWSCWZI9SPYNT/Coding-Smart-Home-Skill-Adapter-Directives-Using-Node-js)
+- 예제 코드 (Code) [링크](https://developer.amazon.com/blogs/post/TxWSCWZI9SPYNT/Coding-Smart-Home-Skill-Adapter-Directives-Using-Node-js)
+- AWS CLI 구성 방법 [링크](https://docs.aws.amazon.com/ko_kr/cli/latest/userguide/cli-chap-getting-started.html)

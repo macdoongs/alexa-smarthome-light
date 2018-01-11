@@ -52,6 +52,9 @@ const NAME_REQUEST_INCREASE_COLOR_TEMPERATURE = "IncreaseColorTemperature";
 
 const NAME_REQUEST_SET_COLOR_TEMPERATURE = "SetColorTemperature";
 
+/* report */
+const NAME_REQUEST_REPORT = "ReportState";
+
 
 /*  response names  */
 
@@ -85,6 +88,11 @@ const NAME_RESPONSE_COLOR = "color";
 
 // color temperature
 const NAME_RESPONSE_COLOR_TEMPERATURE = "colorTemperatureInKelvin";
+
+/* report */
+const NAME_RESPONSE_STATE_REPORT = "StateReport";
+
+const NAME_RESPONSE_STATE_CHANGE_REPORT = "ChangeReport";
 
 
 /* parameters */
@@ -128,6 +136,12 @@ exports.handler = function(event, context, callback){
 
   try {
     switch(requestedNamespace){
+      case NAMESPACE_ALEXA:
+        handleReportingState(event, function(error, directive){
+          callback(null, directive);
+        });
+
+        break;
       case NAMESPACE_DISCOVERY:
         handleDiscovery(event, function(error, directive){
           callback(null, directive);
@@ -178,6 +192,43 @@ exports.handler = function(event, context, callback){
   }// try-catch
 };// exports.handler
 
+
+function handleReportingState(event, callback){
+  console.log("handleReportingState");
+
+  switch(requestedName){
+    case NAME_REQUEST_REPORT :
+      handleStateChangeReport(event, function(error, directive){
+        callback(null, directive);
+      });
+
+      break;
+    default:
+      log("Error", "Unsupported operation" + requestedName);
+
+      handleUnsupportedOperation(event, function(error, directive){
+        callback(null, directive);
+      });
+
+      break;
+  }// switch
+}// handleReportingState
+
+function handleStateContextObject(event, callback) {
+  console.log("handleStateContextObject");
+
+  var response = require("./response_templates/report_state/context_object.json");
+
+  callback(null, response);
+}// handleStateContextObject
+
+function handleStateChangeReport(event, callback){
+  console.log("handleStateChangeReport");
+
+  var response = require("./response_templates/report_state/change_report.json");
+
+  callback(null, response);
+}// handleStateChangeReport
 
 function handleDiscovery(event, callback){
   console.log("handleDiscovery");
@@ -300,7 +351,7 @@ function handlePowerLevelControl(event, callback){
 
       break;
   }// switch
-}
+}// handlePowerLevelControl
 
 function adjustPowerLevel(event, callback){
   console.log("adjustPowerLevel");
@@ -336,7 +387,7 @@ function setPowerLevel(event, callback){
       callback(null, response);
     });
   });
-}
+}// adjustPowerLevel
 
 function handleBrightnessControl(event, callback){
   console.log("handleBrightnessControl");
@@ -373,7 +424,7 @@ function adjustBrightness(event, callback){
   var response = require("./response_templates/brightness/brightness.json");
 
   callback(null, response);
-}
+}// adjustBrightness
 
 function setBrightness(event, callback){
   console.log("setBrightness");
@@ -406,7 +457,7 @@ function setBrightness(event, callback){
       callback(null, response);
     });
   });
-}
+}// setBrightness
 
 function handleColorControl(event, callback){
   console.log("handleColorControl");
@@ -485,7 +536,7 @@ function decreaseColorTemperature(event, callback){
   var response = require("./response_templates/color_temperature/color_temperature.json");
 
   callback(null, response);
-}
+}// decreaseColorTemperature
 
 
 function increaseColorTemperature(event, callback){
@@ -495,7 +546,7 @@ function increaseColorTemperature(event, callback){
   var response = require("./response_templates/color_temperature/color_temperature.json");
 
   callback(null, response);
-}
+}// increaseColorTemperature
 
 
 function setColorTemperature(event, callback){
@@ -529,7 +580,7 @@ function setColorTemperature(event, callback){
       callback(null, response);
     });
   });
-}
+}// setColorTemperature
 
 
 function handleUnsupportedOperation(event, callback){
@@ -618,21 +669,23 @@ function createEndpoints(callback){
 
   // Test data
   // Virtual Devices
-  var endpoint1 = require("./endpoint_templates/endpoint1");
+  const endpoint1 = require("./endpoint_templates/endpoint1");
 
-  var endpoint2 = require("./endpoint_templates/endpoint2");
+  const endpoint2 = require("./endpoint_templates/endpoint2");
 
-  var endpoint3 = require("./endpoint_templates/endpoint3");
+  const endpoint3 = require("./endpoint_templates/endpoint3");
 
-  var endpoint4 = require("./endpoint_templates/endpoint4");
+  const endpoint4 = require("./endpoint_templates/endpoint4");
 
-  var endpoint5 = require("./endpoint_templates/endpoint5");
+  const endpoint5 = require("./endpoint_templates/endpoint5");
 
-  var endpoint6 = require("./endpoint_templates/endpoint6");
+  const endpoint6 = require("./endpoint_templates/endpoint6");
 
-  var endpoint7 = require("./endpoint_templates/endpoint7");
+  const endpoint7 = require("./endpoint_templates/endpoint7");
 
   endpoints.push(endpoint1, endpoint2, endpoint3, endpoint4, endpoint5, endpoint6, endpoint7);
+
+  //log("endpoints :", endpoints);
 
   callback(null, endpoints);
 }// createEndpoints
@@ -655,7 +708,7 @@ function createContext(event, name, value, callback){
 
   context.properties = propertyArray;
 
-  log("context :", context);
+  //log("context :", context);
 
   callback(null, context);
 }// createContext
@@ -676,7 +729,7 @@ function createHeader(namespace, name, correlationToken, callback){
     header.correlationToken = correlationToken;
   }
 
-  //log("create", header);
+  //log("header", header);
 
   callback(null, header);
 }// createHeader
@@ -693,7 +746,7 @@ function createEvent(header, endpoint, payload, callback){
     event.endpoint = endpoint;
   }
 
-  log("event :", event);
+  //log("event :", event);
 
   callback(null, event);
 }// createEvent
@@ -754,7 +807,7 @@ function makeControlResponse(event, responseName, value, callback){
       callback(null, result);
     });
   });
-}
+}// makeControlResponse
 
 
 var log = function(title, msg){
