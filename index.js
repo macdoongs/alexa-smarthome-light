@@ -566,7 +566,7 @@ function setColorTemperature(event, callback){
   body.level = level;
 
   // color
-  body.colorTemp = color.colorTemperatureInKelvin;
+  body.colorTemp = colorTemperatureInKelvin;
 
   var data = {
     url: lightUrl,
@@ -669,19 +669,19 @@ function createEndpoints(callback){
 
   // Test data
   // Virtual Devices
-  const endpoint1 = require("./endpoint_templates/endpoint1");
+  const endpoint1 = require("./endpoint_templates/endpoint1.json");
 
-  const endpoint2 = require("./endpoint_templates/endpoint2");
+  const endpoint2 = require("./endpoint_templates/endpoint2.json");
 
-  const endpoint3 = require("./endpoint_templates/endpoint3");
+  const endpoint3 = require("./endpoint_templates/endpoint3.json");
 
-  const endpoint4 = require("./endpoint_templates/endpoint4");
+  const endpoint4 = require("./endpoint_templates/endpoint4.json");
 
-  const endpoint5 = require("./endpoint_templates/endpoint5");
+  const endpoint5 = require("./endpoint_templates/endpoint5.json");
 
-  const endpoint6 = require("./endpoint_templates/endpoint6");
+  const endpoint6 = require("./endpoint_templates/endpoint6.json");
 
-  const endpoint7 = require("./endpoint_templates/endpoint7");
+  const endpoint7 = require("./endpoint_templates/endpoint7.json");
 
   endpoints.push(endpoint1, endpoint2, endpoint3, endpoint4, endpoint5, endpoint6, endpoint7);
 

@@ -1,5 +1,5 @@
 {
-  "name": "skill-smarthome-light",
+  "name": "alexa-smarthome-light",
   "version": "0.1.0",
   "description": "Alexa skills smarthome light",
   "scripts": {
@@ -7,12 +7,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mac0314/skill-smarthome-light.git"
+    "url": "git+https://github.com/mac0314/alexa-smarthome-light.git"
   },
   "author": "Youngmin Kim",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mac0314/skill-smarthome-light/issues"
+    "url": "https://github.com/mac0314/alexa-smarthome-light/issues"
   },
   "dependencies": {
     "async": "^2.6.0",

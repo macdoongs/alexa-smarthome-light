@@ -59,4 +59,4 @@ typings/
 .env
 config/
 config
-.zip
+*.zip
