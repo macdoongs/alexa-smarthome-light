@@ -1,0 +1,19 @@
+{
+  "endpointId": "appliance-004",
+  "friendlyName": "Goodnight",
+  "description": "Smart Scene by Sample Manufacturer",
+  "manufacturerName": "Sample Manufacturer",
+  "displayCategories": [
+    "SCENE_TRIGGER"
+  ],
+  "cookie": {},
+  "capabilities": [
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa.SceneController",
+      "version": "3",
+      "supportsDeactivation": false,
+      "proactivelyReported": true
+    }
+  ]
+}

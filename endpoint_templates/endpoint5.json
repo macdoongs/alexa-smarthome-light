@@ -1,0 +1,38 @@
+{
+  "endpointId": "appliance-005",
+  "friendlyName": "Watch TV",
+  "description": "Smart Activity by Sample Manufacturer",
+  "manufacturerName": "Sample Manufacturer",
+  "displayCategories": [
+    "ACTIVITY_TRIGGER"
+  ],
+  "cookie": {},
+  "capabilities": [
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa",
+      "version": "3"
+    },
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa.SceneController",
+      "version": "3",
+      "supportsDeactivation": true,
+      "proactivelyReported": true
+    },
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa.EndpointHealth",
+      "version": "3",
+      "properties": {
+          "supported": [
+              {
+                  "name": "connectivity"
+              }
+          ],
+          "proactivelyReported": true,
+          "retrievable": true
+      }
+    }
+  ]
+}

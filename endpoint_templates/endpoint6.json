@@ -1,0 +1,101 @@
+{
+  "endpointId": "appliance-006",
+  "friendlyName": "Back Door Camera",
+  "description": "Smart Camera by Sample Manufacturer",
+  "manufacturerName": "Sample Manufacturer",
+  "displayCategories": [
+    "CAMERA"
+  ],
+  "cookie": {},
+  "capabilities": [
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa",
+      "version": "3"
+    },
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa.CameraStreamController",
+      "version": "3",
+      "cameraStreamConfigurations": [
+        {
+          "protocols": [
+            "RTSP"
+          ],
+          "resolutions": [
+            {
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "width": 1280,
+              "height": 720
+            }
+          ],
+          "authorizationTypes": [
+            "BASIC"
+          ],
+          "videoCodecs": [
+            "H264",
+            "MPEG2"
+          ],
+          "audioCodecs": [
+            "G711"
+          ]
+        },
+        {
+          "protocols": [
+            "RTSP"
+          ],
+          "resolutions": [
+            {
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "width": 1280,
+              "height": 720
+            }
+          ],
+          "authorizationTypes": [
+            "NONE"
+          ],
+          "videoCodecs": [
+            "H264"
+          ],
+          "audioCodecs": [
+            "AAC"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa.PowerController",
+      "version": "3",
+      "properties": {
+        "supported": [
+          {
+            "name": "powerState"
+          }
+        ],
+        "proactivelyReported": true,
+        "retrievable": true
+      }
+    },
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa.EndpointHealth",
+      "version": "3",
+      "properties": {
+          "supported": [
+              {
+                  "name": "connectivity"
+              }
+          ],
+          "proactivelyReported": true,
+          "retrievable": true
+      }
+    }
+  ]
+}

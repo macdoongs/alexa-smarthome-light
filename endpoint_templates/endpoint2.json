@@ -1,0 +1,54 @@
+{
+  "endpointId": "appliance-002",
+  "friendlyName": "Hallway Thermostat",
+  "description": "Smart Thermostat by Sample Manufacturer",
+  "manufacturerName": "Sample Manufacturer",
+  "displayCategories": [
+    "THERMOSTAT"
+  ],
+  "cookie": {},
+  "capabilities": [
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa",
+      "version": "3"
+    },
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa.ThermostatController",
+      "version": "3",
+      "properties": {
+        "supported": [
+          {
+            "name": "lowerSetpoint"
+          },
+          {
+            "name": "targetSetpoint"
+          },
+          {
+            "name": "upperSetpoint"
+          },
+          {
+            "name": "thermostatMode"
+          }
+        ],
+        "proactivelyReported": true,
+        "retrievable": true
+      }
+    },
+    {
+      "type": "AlexaInterface",
+      "interface": "Alexa.TemperatureSensor",
+      "version": "3",
+      "properties": {
+        "supported": [
+          {
+            "name": "temperature"
+          }
+        ],
+        "proactivelyReported": false,
+        "retrievable": true
+      }
+    }
+  ]
+}
