@@ -20,6 +20,12 @@
     - 배치 파일 활용 방법
       - 프로젝트 내 lambda_upload.bat 파일로 업로드 가능
       - [AWS CLI](https://docs.aws.amazon.com/ko_kr/cli/latest/userguide/cli-chap-welcome.html)와 [7zip](http://www.7-zip.org/)가 설치되어 있어야 함.
+    - 쉘 스크립트 파일 활용 방법
+      - 프로젝트 내 lambda_upload.sh 파일로 업로드 가능
+      - 커맨드에서 아래의 명령어를 실행하여 해당 파일을 실행 가능하게 만든 후 실행
+      ```
+        sudo chmod +x lambda_upload.sh
+      ```
 
 
 #### 알렉사 skill 구성하기
