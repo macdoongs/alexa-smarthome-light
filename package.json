@@ -2,6 +2,7 @@
   "name": "alexa-smarthome-light",
   "version": "0.1.0",
   "description": "Alexa skills smarthome light",
+  "main": "index.js",
   "scripts": {
     "start": "node ./index.js"
   },
